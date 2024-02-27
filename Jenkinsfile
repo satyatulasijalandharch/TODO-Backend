@@ -27,24 +27,21 @@ pipeline {
         }
         stage('Install Backend Dependencies') {
             steps {
-                    sh "npm ci"
-                }
+                sh "npm ci"
             }
         }
-        
         stage('Sonarqube Analysis') {
             steps {
-                    withSonarQubeEnv('sonar-server') {
-                        sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=TODO-Backend -Dsonar.projectKey=TODO-Backend"
-                    }
+                withSonarQubeEnv('sonar-server') {
+                    sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=TODO-Backend -Dsonar.projectKey=TODO-Backend"
                 }
             }
         }
         stage('Quality Gate') {
             steps {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar'
-                }
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar'
             }
+        }
         stage('TRIVY FS SCAN') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
@@ -68,7 +65,7 @@ pipeline {
                 sh "trivy image ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} > todo-backend-trivy.txt"
             }
         }
-        stage("TODO-Manifest Checkout"){
+        stage("TODO-Manifest Checkout") {
             steps {
                 git branch: 'main', url: 'https://github.com/satyatulasijalandharch/TODO-Manifest.git'
             }
@@ -76,18 +73,18 @@ pipeline {
         stage('Deploy to TODO-Manifest') {
             steps {
                 script {
-                    withCredentials([usernameColonPassword(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-
+                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
                         sh "sed -Ei '/- name: mrstjch\\/todo-backend\$/{n;s/\\w+\$/\\${IMAGE_TAG}/}' ./deployments/node-app/kustomization.yaml"
-
 
                         // Git commands to stage, commit, and push the changes
                         sh 'git add .'
                         sh "git commit -m 'Update image to ${IMAGE_TAG}'"
-                        sh "git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
+                        sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
                     }
                 }
             }
+        }
+    }
     post {
         success {
             script {
@@ -106,7 +103,6 @@ pipeline {
                 slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
                 slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
             }
-
         }
         failure {
             script {
