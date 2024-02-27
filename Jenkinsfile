@@ -45,7 +45,6 @@ pipeline {
         stage('TRIVY FS SCAN') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
-                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
             }
         }
         stage('Backend Docker Build & Push') {
@@ -62,12 +61,6 @@ pipeline {
         stage('TRIVY Backend Image Scan') {
             steps {
                 sh "trivy image ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} > todo-backend-trivy.txt"
-                slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
-            }
-        }
-        stage('Clean Workspace - TODO-Manifest') {
-            steps {
-                cleanWs()
             }
         }
         stage("TODO-Manifest Checkout") {
@@ -77,18 +70,20 @@ pipeline {
         }
         stage('Deploy to TODO-Backend-Manifest') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
+                dir('./TODO-Manifest') {
+                    script {
+                        withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
 
-                        def imageTag = "${IMAGE_TAG}"
-                        def filePath = './deployments/node-app/kustomization.yaml'
+                            def imageTag = "${IMAGE_TAG}"
+                            def filePath = './deployments/node-app/kustomization.yaml'
 
-                        sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
+                            sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
 
-                        // Git commands to stage, commit, and push the changes
-                        sh 'git add .'
-                        sh "git commit -m 'Update image to ${IMAGE_TAG}'"
-                        sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
+                            // Git commands to stage, commit, and push the changes
+                            sh 'git add .'
+                            sh "git commit -m 'Update image to ${IMAGE_TAG}'"
+                            sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
+                        }
                     }
                 }
             }
@@ -109,6 +104,8 @@ pipeline {
                     ]
                 ]
                 slackSend color: 'good', channel: '#devops', attachments: attachments
+                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
+                slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
             }
         }
         failure {
@@ -125,6 +122,8 @@ pipeline {
                     ]
                 ]
                 slackSend color: 'danger', channel: '#devops', attachments: attachments
+                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
+                slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
             }
         }
     }
