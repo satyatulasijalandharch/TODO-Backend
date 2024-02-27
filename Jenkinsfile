@@ -78,11 +78,11 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
 
-                        sh "sed -Ei '/- name: mrstjch\\/todo-frontend\$/{n;s/(\\s+newTag:\\s+)[0-9]+\\.[0-9]+\\.[0-9]+/\\1${IMAGE_TAG}/}' ./deployments/node-app/kustomization.yaml"
+                        sh "sed -Ei '/- name: mrstjch\\/todo-backend\$/{n;s/(\\s+newTag:\\s+)[0-9]+\\.[0-9]+\\.[0-9]+/\\1${IMAGE_TAG}/}' ./deployments/node-app/kustomization.yaml"
 
                         // Git commands to stage, commit, and push the changes
                         sh 'git add .'
-                        sh "git commit -m 'Update image to ${IMAGE_TAG}'"
+                        sh "git commit -m 'Backend image updated to ${IMAGE_TAG}'"
                         sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
                     }
                 }
