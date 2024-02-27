@@ -68,11 +68,15 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/satyatulasijalandharch/TODO-Manifest.git'
             }
         }
-        stage('Deploy to TODO-Manifest') {
+        stage('Deploy to TODO-Backend-Manifest') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
-                        sh "sed -Ei '/- name: mrstjch\\/todo-backend\$/{n;s/\\w+\$/\\${IMAGE_TAG}/}' ./deployments/node-app/kustomization.yaml"
+
+                        def imageTag = "${IMAGE_TAG}"
+                        def filePath = './deployments/node-app/kustomization.yaml'
+
+                        sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
 
                         // Git commands to stage, commit, and push the changes
                         sh 'git add .'
