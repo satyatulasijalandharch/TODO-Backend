@@ -45,6 +45,7 @@ pipeline {
         stage('TRIVY FS SCAN') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
+                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
             }
         }
         stage('Backend Docker Build & Push') {
@@ -61,49 +62,10 @@ pipeline {
         stage('TRIVY Backend Image Scan') {
             steps {
                 sh "trivy image ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} > todo-backend-trivy.txt"
-            }
-        }
-    }
-    post {
-        success {
-            script {
-                def attachments = [
-                    [
-                        "color": "good",
-                        "text": "Build Successful",
-                        "fields": [
-                            ["title": "Project", "value": "${env.JOB_NAME}", "short": true],
-                            ["title": "Build Number", "value": "${env.BUILD_NUMBER}", "short": true],
-                            ["title": "URL", "value": "${env.BUILD_URL}", "short": false]
-                        ]
-                    ]
-                ]
-                slackSend color: 'good', channel: '#devops', attachments: attachments
-                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
                 slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
             }
         }
-        failure {
-            script {
-                def attachments = [
-                    [
-                        "color": "danger",
-                        "text": "Build Failed",
-                        "fields": [
-                            ["title": "Project", "value": "${env.JOB_NAME}", "short": true],
-                            ["title": "Build Number", "value": "${env.BUILD_NUMBER}", "short": true],
-                            ["title": "URL", "value": "${env.BUILD_URL}", "short": false]
-                        ]
-                    ]
-                ]
-                slackSend color: 'danger', channel: '#devops', attachments: attachments
-                slackUploadFile filePath: "trivyfs.txt", initialComment: "TRIVY FS Scan Results (Backend)"
-                slackUploadFile filePath: "todo-backend-trivy.txt", initialComment: "TRIVY Backend Image Scan Results"
-            }
-        }
-    }
-    stages {
-        stage('Clean Workspace') {
+        stage('Clean Workspace - TODO-Manifest') {
             steps {
                 cleanWs()
             }
@@ -132,5 +94,38 @@ pipeline {
             }
         }
     }
-    
+    post {
+        success {
+            script {
+                def attachments = [
+                    [
+                        "color": "good",
+                        "text": "Build Successful",
+                        "fields": [
+                            ["title": "Project", "value": "${env.JOB_NAME}", "short": true],
+                            ["title": "Build Number", "value": "${env.BUILD_NUMBER}", "short": true],
+                            ["title": "URL", "value": "${env.BUILD_URL}", "short": false]
+                        ]
+                    ]
+                ]
+                slackSend color: 'good', channel: '#devops', attachments: attachments
+            }
+        }
+        failure {
+            script {
+                def attachments = [
+                    [
+                        "color": "danger",
+                        "text": "Build Failed",
+                        "fields": [
+                            ["title": "Project", "value": "${env.JOB_NAME}", "short": true],
+                            ["title": "Build Number", "value": "${env.BUILD_NUMBER}", "short": true],
+                            ["title": "URL", "value": "${env.BUILD_URL}", "short": false]
+                        ]
+                    ]
+                ]
+                slackSend color: 'danger', channel: '#devops', attachments: attachments
+            }
+        }
+    }
 }
