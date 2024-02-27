@@ -63,29 +63,6 @@ pipeline {
                 sh "trivy image ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} > todo-backend-trivy.txt"
             }
         }
-        stage("TODO-Manifest Checkout") {
-            steps {
-                git branch: 'main', url: 'https://github.com/satyatulasijalandharch/TODO-Manifest.git'
-            }
-        }
-        stage('Deploy to TODO-Backend-Manifest') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
-
-                        def imageTag = "${IMAGE_TAG}"
-                        def filePath = './deployments/node-app/kustomization.yaml'
-
-                        sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
-
-                        // Git commands to stage, commit, and push the changes
-                        sh 'git add .'
-                        sh "git commit -m 'Update image to ${IMAGE_TAG}'"
-                        sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
-                    }
-                }
-            }
-        }
     }
     post {
         success {
@@ -125,4 +102,35 @@ pipeline {
             }
         }
     }
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage("TODO-Manifest Checkout") {
+            steps {
+                git branch: 'main', url: 'https://github.com/satyatulasijalandharch/TODO-Manifest.git'
+            }
+        }
+        stage('Deploy to TODO-Backend-Manifest') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
+
+                        def imageTag = "${IMAGE_TAG}"
+                        def filePath = './deployments/node-app/kustomization.yaml'
+
+                        sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
+
+                        // Git commands to stage, commit, and push the changes
+                        sh 'git add .'
+                        sh "git commit -m 'Update image to ${IMAGE_TAG}'"
+                        sh "git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main"
+                    }
+                }
+            }
+        }
+    }
+    
 }
