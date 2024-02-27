@@ -15,6 +15,11 @@ pipeline {
         IMAGE_TAG = "${RELEASE}.${BUILD_NUMBER}"
     }
     stages {
+        stage('Started') {
+            steps {
+                slackSend botUser: true, channel: '#devops', color: 'good', message: 'Backend Build Started', teamDomain: 'DevOps', tokenCredentialId: 'slack'
+            }
+        }
         stage('Clean Workspace') {
             steps {
                 cleanWs()
@@ -72,9 +77,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
-
-                        // def imageTag = "${IMAGE_TAG}"
-                        // def filePath = './deployments/node-app/kustomization.yaml'
 
                         sh "sed -Ei '/- name: mrstjch\\/todo-frontend\$/{n;s/(\\s+newTag:\\s+)[0-9]+\\.[0-9]+\\.[0-9]+/\\1${IMAGE_TAG}/}' ./deployments/node-app/kustomization.yaml"
 
