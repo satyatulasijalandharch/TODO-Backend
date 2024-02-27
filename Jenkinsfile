@@ -51,10 +51,9 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                            sh "docker build -t ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} -t ${IMAGE_NAME}/todo-backend:latest ."
-                            sh "docker push ${IMAGE_NAME}/todo-backend:${IMAGE_TAG}"
-                            sh "docker push ${IMAGE_NAME}/todo-backend:latest"
-                        }
+                        sh "docker build -t ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} -t ${IMAGE_NAME}/todo-backend:latest ."
+                        sh "docker push ${IMAGE_NAME}/todo-backend:${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_NAME}/todo-backend:latest"
                     }
                 }
             }
