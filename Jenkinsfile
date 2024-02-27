@@ -75,7 +75,7 @@ pipeline {
                         withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
 
                             def imageTag = "${IMAGE_TAG}"
-                            def filePath = './deployments/node-app/kustomization.yaml'
+                            def filePath = 'deployments/node-app/kustomization.yaml'
 
                             sh "sed -i 's/\\(- name: mrstjch\\/todo-frontend\\)\\(\\s*newTag: \\).*/\\1\\2newTag: ${imageTag}/' ${filePath}"
 
