@@ -51,7 +51,6 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        dir('TODO-APP/backend') {
                             sh "docker build -t ${IMAGE_NAME}/todo-backend:${IMAGE_TAG} -t ${IMAGE_NAME}/todo-backend:latest ."
                             sh "docker push ${IMAGE_NAME}/todo-backend:${IMAGE_TAG}"
                             sh "docker push ${IMAGE_NAME}/todo-backend:latest"
