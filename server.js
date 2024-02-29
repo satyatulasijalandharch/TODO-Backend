@@ -4,30 +4,18 @@ const cors = require("cors");
 const TodoModel = require("./models/todoList");
 require('dotenv').config();
 
-var app = express();
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connect to your MongoDB database (replace with your database URL)
 mongoose.connect(process.env.MONGODB_URL || "mongodb://localhost:27017", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Check for database connection errors
 mongoose.connection.on("error", (error) => {
   console.error("MongoDB connection error:", error);
 });
-
-// Once the connection is open, start the server
-// mongoose.connection.once("open", () => {
-//   console.log("MongoDB connected successfully");
-//   app.listen(3001, () => {
-//     console.log("Server running on port 3001");
-//   });
-// });
-
-// ...
 
 const PORT = process.env.PORT || 3001;
 
@@ -38,8 +26,14 @@ mongoose.connection.once("open", () => {
   });
 });
 
-// ...
-
+// Get server time in 12-hour format
+app.get("/getServerTime", (req, res) => {
+  const serverTime = new Date().toLocaleString("en-US", {
+    timeZone: "Asia/Kolkata",
+    hour12: true,
+  });
+  res.json(serverTime);
+});
 
 // Get saved tasks from the database
 app.get("/getTodoList", (req, res) => {
@@ -80,4 +74,8 @@ app.delete("/deleteTodoList/:id", (req, res) => {
   })
     .then((todo) => res.json(todo))
     .catch((err) => res.json(err));
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello, this is your Express.js server!");
 });
