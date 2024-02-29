@@ -2,13 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const TodoModel = require("./models/todoList");
+require('dotenv').config();
 
 var app = express();
 app.use(cors());
 app.use(express.json());
 
 // Connect to your MongoDB database (replace with your database URL)
-mongoose.connect(process.env.MONGODB_URL || "mongodb://satya:satya123@mongodb:27018/", {
+mongoose.connect(process.env.MONGODB_URL, {// || "mongodb://satya:satya123@mongodb:27018/", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -19,12 +20,26 @@ mongoose.connection.on("error", (error) => {
 });
 
 // Once the connection is open, start the server
+// mongoose.connection.once("open", () => {
+//   console.log("MongoDB connected successfully");
+//   app.listen(3001, () => {
+//     console.log("Server running on port 3001");
+//   });
+// });
+
+// ...
+
+const PORT = process.env.PORT || 3001;
+
 mongoose.connection.once("open", () => {
   console.log("MongoDB connected successfully");
-  app.listen(3001, () => {
-    console.log("Server running on port 3001");
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
 });
+
+// ...
+
 
 // Get saved tasks from the database
 app.get("/getTodoList", (req, res) => {

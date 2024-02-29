@@ -9,9 +9,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3001
-
-# Set the environment variable
-ENV MONGODB_URL=mongodb://satya:satya123@mongodb:27017
+# EXPOSE 3001
 
 CMD ["npm", "start"]
