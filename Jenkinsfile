@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         jdk 'jdk17'
-        nodejs 'node20'
+        nodejs 'node16'
     }
     environment {
         GIT_REPO_NAME = "TODO-Manifest"
