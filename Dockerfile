@@ -13,6 +13,9 @@ ENV TZ Asia/Kolkata
 ENV LANG en_US.UTF-8
 ENV LC_TIME en_US.UTF-8
 
+ENV MONGODB_URL=$MONGODB_URL
+ENV PORT=$PORT
+
 # install dependencies
 COPY package*.json ./
 
@@ -20,6 +23,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3001
+EXPOSE $PORT
 
 CMD ["npm", "start"]
